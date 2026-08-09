@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, ForeignKey, inspect
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, ForeignKey, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///phytomatrix_rnd.db")
@@ -59,14 +59,17 @@ class FormulationItem(Base):
     formulation = relationship("Formulation", back_populates="items")
 
 def init_db():
-    # Schema auto-migration check for SQLite persistence
+    Base.metadata.create_all(bind=engine)
+    
+    # Safe SQLite in-place schema migration
     inspector = inspect(engine)
     if inspector.has_table("botanicals"):
         columns = [c["name"] for c in inspector.get_columns("botanicals")]
         if "traditional_json" not in columns:
-            Base.metadata.drop_all(bind=engine)
-            
-    Base.metadata.create_all(bind=engine)
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE botanicals ADD COLUMN traditional_json TEXT DEFAULT '{}'"))
+                conn.commit()
+
     session = SessionLocal()
     try:
         if session.query(Botanical).count() == 0:
@@ -95,6 +98,14 @@ def init_db():
                         lipinski=p_data["lipinski"]
                     ))
                 session.commit()
+        else:
+            # Backfill traditional_json for existing records if missing
+            from seed_data import BOTANICAL_SEED_LIBRARY
+            for b_data in BOTANICAL_SEED_LIBRARY:
+                bot = session.query(Botanical).filter_by(latin_name=b_data["latin_name"]).first()
+                if bot and (not bot.traditional_json or bot.traditional_json == "{}"):
+                    bot.traditional_json = json.dumps(b_data.get("traditional_data", {}))
+            session.commit()
     finally:
         session.close()
 
