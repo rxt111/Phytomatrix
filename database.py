@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, ForeignKey, inspect
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///phytomatrix_rnd.db")
@@ -59,6 +59,13 @@ class FormulationItem(Base):
     formulation = relationship("Formulation", back_populates="items")
 
 def init_db():
+    # Schema auto-migration check for SQLite persistence
+    inspector = inspect(engine)
+    if inspector.has_table("botanicals"):
+        columns = [c["name"] for c in inspector.get_columns("botanicals")]
+        if "traditional_json" not in columns:
+            Base.metadata.drop_all(bind=engine)
+            
     Base.metadata.create_all(bind=engine)
     session = SessionLocal()
     try:
