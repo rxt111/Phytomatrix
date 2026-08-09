@@ -188,13 +188,22 @@ with st.sidebar:
             st.session_state.formulation_tray = r_data["items"]
             st.rerun()
 
-# Database Query
+# Database Query with Self-Healing Auto-Recovery
 def fetch_all_botanicals():
-    session = db.SessionLocal()
     try:
-        return session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
-    finally:
-        session.close()
+        session = db.SessionLocal()
+        try:
+            return session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
+        finally:
+            session.close()
+    except Exception:
+        # Automatic recovery: if schema is outdated or file locked, reset database and retry
+        db.reset_db()
+        session = db.SessionLocal()
+        try:
+            return session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
+        finally:
+            session.close()
 
 botanicals = fetch_all_botanicals()
 
