@@ -189,9 +189,14 @@ with st.sidebar:
             st.rerun()
 
 # Database Query
-session = db.SessionLocal()
-botanicals = session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
-session.close()
+def fetch_all_botanicals():
+    session = db.SessionLocal()
+    try:
+        return session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
+    finally:
+        session.close()
+
+botanicals = fetch_all_botanicals()
 
 # ---------------------------------------------------------
 # 1. BOTANICAL EXPLORER (Homepage Clean Search-First View)
