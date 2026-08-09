@@ -22,6 +22,7 @@ class Botanical(Base):
     family = Column(String(255), nullable=False)
     synonyms_json = Column(Text, default="[]")
     genus_species_json = Column(Text, default="[]")
+    traditional_json = Column(Text, default="{}")
     phytochemicals = relationship("Phytochemical", back_populates="botanical", cascade="all, delete-orphan")
 
 class Phytochemical(Base):
@@ -69,7 +70,8 @@ def init_db():
                     common_name=b_data["common_name"],
                     family=b_data["family"],
                     synonyms_json=json.dumps(b_data["synonyms"]),
-                    genus_species_json=json.dumps(b_data["genus_species"])
+                    genus_species_json=json.dumps(b_data["genus_species"]),
+                    traditional_json=json.dumps(b_data.get("traditional_data", {}))
                 )
                 session.add(bot)
                 session.commit()
