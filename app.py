@@ -5,11 +5,13 @@ import requests
 import pandas as pd
 import streamlit as st
 
+from sqlalchemy.orm import joinedload
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
 from reportlab.lib.styles import getSampleStyleSheet
 
 import database as db
+import migrate_db
 
 st.set_page_config(page_title="PhytoMatrix R&D Engine", page_icon="🌿", layout="wide")
 
@@ -65,9 +67,10 @@ def generate_pdf_dossier(plant_name: str, bom_df: pd.DataFrame, rheo: dict) -> b
     buffer.seek(0)
     return buffer.getvalue()
 
+# Sidebar Navigation Setup
 with st.sidebar:
     st.title("🌿 PhytoMatrix R&D")
-    nav = st.radio("Navigation", ["🔍 Botanical Explorer", "🏭 Manufacturing SOP & Quality"])
+    nav = st.radio("Navigation", ["🔍 Botanical Explorer", "🏭 Manufacturing SOP & Quality", "🗄️ Database Diagnostics"])
     st.divider()
     
     st.subheader("🛒 Polyherbal Tray")
@@ -77,8 +80,19 @@ with st.sidebar:
         st.session_state.formulation_tray = []
         st.rerun()
 
+    st.divider()
+    st.subheader("💾 Saved Recipes")
+    recipes = db.get_saved_formulations()
+    if recipes:
+        sel_rec = st.selectbox("Load Recipe", options=[r["id"] for r in recipes], format_func=lambda x: next(r["name"] for r in recipes if r["id"] == x))
+        if st.button("Load Recipe", use_container_width=True):
+            r_data = next(r for r in recipes if r["id"] == sel_rec)
+            st.session_state.formulation_tray = r_data["items"]
+            st.rerun()
+
+# Database Query with Eager Loading (Fixes DetachedInstanceError)
 session = db.SessionLocal()
-botanicals = session.query(db.Botanical).all()
+botanicals = session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
 session.close()
 
 if nav == "🔍 Botanical Explorer":
@@ -136,3 +150,8 @@ elif nav == "🏭 Manufacturing SOP & Quality":
         ])
         pdf_bytes = generate_pdf_dossier("Polyherbal Active", sample_bom, rheo)
         st.download_button("📥 Download PDF Dossier", data=pdf_bytes, file_name="Technical_Specification.pdf", mime="application/pdf", type="primary")
+
+elif nav == "🗄️ Database Diagnostics":
+    st.title("🗄️ Database Diagnostics & Health")
+    health = migrate_db.verify_database_health(db.DATABASE_URL)
+    st.json(health)
