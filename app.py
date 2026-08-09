@@ -5,13 +5,13 @@ import requests
 import pandas as pd
 import streamlit as st
 
+from sqlalchemy import inspect
 from sqlalchemy.orm import joinedload
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
 from reportlab.lib.styles import getSampleStyleSheet
 
 import database as db
-import migrate_db
 
 st.set_page_config(page_title="PhytoMatrix R&D Engine", page_icon="🌿", layout="wide")
 
@@ -67,6 +67,19 @@ def generate_pdf_dossier(plant_name: str, bom_df: pd.DataFrame, rheo: dict) -> b
     buffer.seek(0)
     return buffer.getvalue()
 
+def check_db_diagnostics() -> dict:
+    session = db.SessionLocal()
+    try:
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        counts = {}
+        if "botanicals" in tables: counts["botanicals"] = session.query(db.Botanical).count()
+        if "phytochemicals" in tables: counts["phytochemicals"] = session.query(db.Phytochemical).count()
+        if "formulations" in tables: counts["formulations"] = session.query(db.Formulation).count()
+        return {"tables": tables, "counts": counts, "status": "Connected & Healthy"}
+    finally:
+        session.close()
+
 # Sidebar Navigation Setup
 with st.sidebar:
     st.title("🌿 PhytoMatrix R&D")
@@ -90,7 +103,7 @@ with st.sidebar:
             st.session_state.formulation_tray = r_data["items"]
             st.rerun()
 
-# Database Query with Eager Loading (Fixes DetachedInstanceError)
+# Fetch Botanicals safely with Eager Loading (Fixes DetachedInstanceError)
 session = db.SessionLocal()
 botanicals = session.query(db.Botanical).options(joinedload(db.Botanical.phytochemicals)).all()
 session.close()
@@ -153,5 +166,5 @@ elif nav == "🏭 Manufacturing SOP & Quality":
 
 elif nav == "🗄️ Database Diagnostics":
     st.title("🗄️ Database Diagnostics & Health")
-    health = migrate_db.verify_database_health(db.DATABASE_URL)
+    health = check_db_diagnostics()
     st.json(health)
