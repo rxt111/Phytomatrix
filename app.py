@@ -5,7 +5,6 @@ import requests
 import pandas as pd
 import streamlit as st
 
-from sqlalchemy import inspect
 from sqlalchemy.orm import joinedload
 
 from reportlab.lib.pagesizes import letter
@@ -117,7 +116,8 @@ def generate_custom_pdf(selected_sections: list, bot_entity, tray_items: list, r
         story.append(Spacer(1, 10))
 
     if "Traditional Medicine Indications & Formulations" in selected_sections and bot_entity:
-        trad = json.loads(bot_entity.traditional_json or "{}")
+        raw_trad = getattr(bot_entity, "traditional_json", "{}") or "{}"
+        trad = json.loads(raw_trad)
         story.append(Paragraph("<b>2. Traditional Medicine Systems & Indications</b>", styles['Heading2']))
         if "ayurveda" in trad:
             a = trad["ayurveda"]
@@ -239,7 +239,8 @@ elif nav == "🏛️ Traditional Medicine Systems":
     if botanicals:
         selected_latin = st.selectbox("Select Entity for Traditional Profiling:", [b.latin_name for b in botanicals])
         bot_entity = next(b for b in botanicals if b.latin_name == selected_latin)
-        trad_data = json.loads(bot_entity.traditional_json or "{}")
+        raw_trad = getattr(bot_entity, "traditional_json", "{}") or "{}"
+        trad_data = json.loads(raw_trad)
         
         t1, t2 = st.columns(2)
         with t1:
