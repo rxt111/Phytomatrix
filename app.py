@@ -6,7 +6,7 @@ import plotly.express as px
 # ⚙️ PAGE CONFIGURATION & STYLING
 # ==========================================
 st.set_page_config(
-    page_title="Phytochemical & Ethnopharmacological Engine",
+    page_title="PhytoMatrix Platform",
     page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -28,8 +28,8 @@ st.markdown("""
 # 🗂️ SIDEBAR NAVIGATION
 # ==========================================
 st.sidebar.image("https://img.icons8.com/isometric-folders/100/leaf.png", width=60)
-st.sidebar.title("Phytochem Engine")
-st.sidebar.caption("8-Module Ethnopharmacological Platform")
+st.sidebar.title("PhytoMatrix")
+st.sidebar.caption("Ethnopharmacological Intelligence Platform")
 
 selected_botanical = st.sidebar.selectbox(
     "Select Botanical Species",
@@ -38,29 +38,31 @@ selected_botanical = st.sidebar.selectbox(
 
 st.sidebar.divider()
 
-module_choice = st.sidebar.radio(
-    "Navigate Modules",
+# Navigation selection without label title
+navigation_choice = st.sidebar.radio(
+    "",
     [
-        "🌿 Module 1: Taxonomy & Identification",
-        "🧪 Module 2: Phytochemistry Master Summary",
-        "🏛️ Module 3: Traditional Medicine Systems",
-        "⚖️ Module 4: Patent & FTO Assessment",
-        "🧬 Module 5: Pharmacological Profile & MoA",
-        "⚠️ Module 6: Safety, Toxicology & Interactions",
-        "🏥 Module 7: Clinical Evidence & RCTs",
-        "📚 Module 8: Literature References"
-    ]
+        "🌿 Botanical Taxonomy & Identification",
+        "🧪 Phytochemistry Master Summary",
+        "🏛️ Traditional Medicine Systems",
+        "⚖️ Patent & FTO Assessment",
+        "🧬 Pharmacological Profile & MoA",
+        "⚠️ Safety, Toxicology & Interactions",
+        "🏥 Clinical Evidence & Human Trials",
+        "📚 Literature References & Bibliography"
+    ],
+    label_visibility="collapsed"
 )
 
 # Top Bar Header
-st.markdown(f"<div class='main-header'>🔬 Phytochemical Intelligence Platform</div>", unsafe_allow_html=True)
+st.markdown("<div class='main-header'>🔬 PhytoMatrix Platform</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='sub-header'>Active Species: <b>{selected_botanical}</b></div>", unsafe_allow_html=True)
 
 # ==========================================
-# 🌿 MODULE 1: BOTANICAL TAXONOMY
+# 🌿 BOTANICAL TAXONOMY
 # ==========================================
-if "Module 1" in module_choice:
-    st.header("🌿 Module 1: Botanical Taxonomy & Identification")
+if "Taxonomy" in navigation_choice:
+    st.header("🌿 Botanical Taxonomy & Identification")
     st.markdown("---")
     
     col1, col2 = st.columns([2, 1])
@@ -94,10 +96,10 @@ if "Module 1" in module_choice:
         })
 
 # ==========================================
-# 🧪 MODULE 2: PHYTOCHEMISTRY
+# 🧪 PHYTOCHEMISTRY
 # ==========================================
-elif "Module 2" in module_choice:
-    st.header("🧪 Module 2: Phytochemical Constituents (7-Column Master View)")
+elif "Phytochemistry" in navigation_choice:
+    st.header("🧪 Phytochemistry Master Summary")
     st.markdown("---")
     
     compounds_data = [
@@ -166,10 +168,10 @@ elif "Module 2" in module_choice:
             st.markdown("<span class='badge-pass'>🟢 Lipinski Status: PASS (0 Violations)</span>", unsafe_allow_html=True)
 
 # ==========================================
-# 🏛️ MODULE 3: TRADITIONAL MEDICINE
+# 🏛️ TRADITIONAL MEDICINE SYSTEMS
 # ==========================================
-elif "Module 3" in module_choice:
-    st.header("🏛️ Module 3: Traditional Medicine Systems (6 Frameworks)")
+elif "Traditional" in navigation_choice:
+    st.header("🏛️ Traditional Medicine Systems (6 Frameworks)")
     st.markdown("---")
     
     tab_ayurveda, tab_tcm, tab_unani, tab_siddha, tab_kampo, tab_western = st.tabs([
@@ -194,7 +196,7 @@ elif "Module 3" in module_choice:
             st.subheader("Dosha Impact")
             dosha_df = pd.DataFrame({
                 "Dosha": ["Vata", "Pitta", "Kapha"],
-                "Effect": [-1, 0, -1] # -1 = Pacifying, 0 = Neutral, +1 = Aggravating
+                "Effect": [-1, 0, -1]
             })
             fig = px.line_polar(dosha_df, r='Effect', theta='Dosha', line_close=True)
             st.plotly_chart(fig, use_container_width=True)
@@ -228,10 +230,10 @@ elif "Module 3" in module_choice:
         st.write("**Herbal Action:** Adaptogen, Modulates HPA-Axis → Chronic Stress Fatigue")
 
 # ==========================================
-# ⚖️ MODULE 4: PATENT & FTO
+# ⚖️ PATENT & FTO
 # ==========================================
-elif "Module 4" in module_choice:
-    st.header("⚖️ Module 4: Patent Summary & Freedom to Operate (FTO)")
+elif "Patent" in navigation_choice:
+    st.header("⚖️ Patent Summary & Freedom to Operate (FTO)")
     st.markdown("---")
     
     st.markdown("### 🛡️ FTO Risk Summary")
@@ -264,10 +266,10 @@ elif "Module 4" in module_choice:
     st.dataframe(pd.DataFrame(patents), use_container_width=True)
 
 # ==========================================
-# 🧬 MODULE 5: PHARMACOLOGY
+# 🧬 PHARMACOLOGY
 # ==========================================
-elif "Module 5" in module_choice:
-    st.header("🧬 Module 5: Pharmacological Profile & Mechanisms (MoA)")
+elif "Pharmacological" in navigation_choice:
+    st.header("🧬 Pharmacological Profile & Mechanisms (MoA)")
     st.markdown("---")
     
     st.subheader("Molecular Targets & Binding Affinities")
@@ -283,10 +285,10 @@ elif "Module 5" in module_choice:
     st.write("• **Nrf2-ARE Antioxidant Pathway** (Upregulation of SOD, Catalase)")
 
 # ==========================================
-# ⚠️ MODULE 6: SAFETY & TOXICOLOGY
+# ⚠️ SAFETY & TOXICOLOGY
 # ==========================================
-elif "Module 6" in module_choice:
-    st.header("⚠️ Module 6: Safety, Toxicology & Herb-Drug Interactions")
+elif "Safety" in navigation_choice:
+    st.header("⚠️ Safety, Toxicology & Herb-Drug Interactions")
     st.markdown("---")
     
     col_s1, col_s2 = st.columns(2)
@@ -308,10 +310,10 @@ elif "Module 6" in module_choice:
         st.table(cyp_df)
 
 # ==========================================
-# 🏥 MODULE 7: CLINICAL EVIDENCE
+# 🏥 CLINICAL EVIDENCE
 # ==========================================
-elif "Module 7" in module_choice:
-    st.header("🏥 Module 7: Clinical Evidence & Human Trials")
+elif "Clinical" in navigation_choice:
+    st.header("🏥 Clinical Evidence & Human Trials")
     st.markdown("---")
     
     st.subheader("Tier 1: Clinical Evidence Summary by Indication")
@@ -322,10 +324,10 @@ elif "Module 7" in module_choice:
     st.dataframe(pd.DataFrame(evidence_summary), use_container_width=True)
 
 # ==========================================
-# 📚 MODULE 8: LITERATURE REFERENCES
+# 📚 LITERATURE REFERENCES
 # ==========================================
-elif "Module 8" in module_choice:
-    st.header("📚 Module 8: Literature References & Bibliography")
+elif "Literature" in navigation_choice:
+    st.header("📚 Literature References & Bibliography")
     st.markdown("---")
     
     st.subheader("Searchable Citation Database")
